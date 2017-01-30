@@ -1,0 +1,52 @@
+<!-- todoapp
+new-todo
+todo-list
+toggle
+destroy
+edit
+ -->
+
+<section class="todoapp">
+    <header class="header">
+        <h1>Todo</h1>
+        <input 
+            type="text" 
+            name="newTodo" 
+            class="new-todo" 
+            placeholder="Enter to add new task" 
+            [(ngModel)]="newTodo"
+            (keyup.enter)="addTodo()"
+            autofocus>         
+    </header>
+        
+    <section class="main">
+        <ul class="todo-list">
+            <li *ngFor="let todo of todos" [ngClass]="{completed: todo.completed, editing: todo.editing}">
+                <div class="view">
+                    <input type="checkbox" class="toggle" [checked]="todo.completed" (change)="updateTodo(todo)" >
+                    <label (dblclick)="todo.editing = true" >{{todo.title}}</label>
+                    <button 
+                        class="destroy"
+                        (click)="deleteTodo(todo)"
+                        ></button>
+                </div>
+                <input 
+                    type="text" 
+                    class="edit" 
+                    value="{{todo.title}}"
+                    #editedTodo
+                    (keyup.enter)="updateTodo(todo, editedTodo.value)"
+                    (blur)="updateTodo(todo, editedTodo.value)">
+            </li>
+        </ul>
+    </section>
+
+    <footer class="footer">
+        <span class="todo-count">{{activeTasks}} Left</span>
+        <ul class="filters">
+            <li><a [routerLink]="['/all']" [class.selected]="path === 'all'" > All </a></li>
+            <li><a [routerLink]="['/active']" [class.selected]="path === 'active'" > Active </a></li>
+            <li><a [routerLink]="['/completed']" [class.selected]="path === 'completed'" > Completed </a></li>
+        </ul>
+    </footer>
+</section>
