@@ -3,55 +3,69 @@ import { ActivatedRoute } from '@angular/router';
 
 import { TodoService } from './todo.service';
 
+//redux
+import { createStore } from 'redux';
+import { rootReducer } from './rootReducer';
+import { TodoActions } from './todoActions';
+
+
+const appStore = createStore(rootReducer);
 
 @Component({
   selector: 'app-todo',
   templateUrl: './todo.component.html',
   styleUrls: ['./todo.component.scss'],
-  providers: [TodoService]
+  providers: [
+    { provide: 'AppStore', useValue: appStore },
+    TodoActions 
+  ]
 })
-export class TodoComponent implements OnInit {
+export class TodoComponent {
     private todos;
     private activeTasks;
     private newTodo;
     private path;
 
-    constructor(private todoService: TodoService, private route: ActivatedRoute) { }
+    constructor(private route: ActivatedRoute, private todoAction: TodoActions) {
+        // this.todos = appStore.getState().todos;
+        // appStore.subscribe(() => {
+        //     this.todos = appStore.getState().todos;
+        // });
+    }
 
     getTodos(query = '') {
-        this.todoService.get(query).then(todos => {
-            this.todos = todos;
-            this.activeTasks = this.todos.filter(todo => todo.completed === false).length;
-        });
+        let data = appStore.getState().todos;
+        if(query === 'completed' || query === 'active'){
+            var isCompleted = query === 'completed';
+            data = data.filter(todo => todo.completed === isCompleted);
+        } 
+        this.todos = data;
+        this.activeTasks = data.filter(todo => todo.completed === false).length;
     }
 
     addTodo() {
-        this.todoService.add({title: this.newTodo, completd: false}).then(() => {
-            this.newTodo = '';
-            return this.getTodos();
-        });
+        appStore.dispatch(this.todoAction.addTodo(this.newTodo));
+        this.newTodo = '';
     }
 
     deleteTodo(todo) {
-        this.todoService.delete(todo.id).then(() => {
-            return this.getTodos();
-        });
+        appStore.dispatch(this.todoAction.removeTodo(todo.id));
     }
 
-    updateTodo(todo, newTitle) {
-        if(newTitle){
-            todo.title = newTitle;
-        }else{
-            todo.completed = !todo.completed;
-        }
-        
-        this.todoService.update(todo).then(() => {
-            todo.editing = false;
-            return this.getTodos(this.path);
-        });
+    toggleTodo(id) {
+        appStore.dispatch(this.todoAction.toggleTodo(id));
+    }
+
+    updateTodo(id, newTitle) {
+        appStore.dispatch(this.todoAction.updateTodo(id, newTitle));
+        // todo.editing = false;
     }
 
     ngOnInit() {
+        
+        appStore.subscribe(() => {
+            this.todos = appStore.getState().todos;
+        });
         this.route.params.subscribe(params => {
             this.path = params['status'];
             this.getTodos(this.path);

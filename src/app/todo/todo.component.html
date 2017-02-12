@@ -23,7 +23,7 @@ edit
         <ul class="todo-list">
             <li *ngFor="let todo of todos" [ngClass]="{completed: todo.completed, editing: todo.editing}">
                 <div class="view">
-                    <input type="checkbox" class="toggle" [checked]="todo.completed" (change)="updateTodo(todo)" >
+                    <input type="checkbox" class="toggle" [checked]="todo.completed" (change)="toggleTodo(todo.id)" >
                     <label (dblclick)="todo.editing = true" >{{todo.title}}</label>
                     <button 
                         class="destroy"
@@ -35,8 +35,8 @@ edit
                     class="edit" 
                     value="{{todo.title}}"
                     #editedTodo
-                    (keyup.enter)="updateTodo(todo, editedTodo.value)"
-                    (blur)="updateTodo(todo, editedTodo.value)">
+                    (keyup.enter)="updateTodo(todo.id, editedTodo.value);todo.editing = false"
+                    (blur)="updateTodo(todo.id, editedTodo.value); todo.editing=false">
             </li>
         </ul>
     </section>
